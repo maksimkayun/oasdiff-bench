@@ -1,0 +1,98 @@
+name: go
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GO111MODULE: 'on'
+      CGO_ENABLED: '0'
+    strategy:
+      fail-fast: true
+      matrix:
+        go: ['1.24']
+        os:
+        - ubuntu-latest
+        - windows-latest
+        - macos-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    name: ${{ matrix.go }} on ${{ matrix.os }}
+    steps:
+
+    - uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go }}
+
+    - id: go-cache-paths
+      run: |
+        echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+        echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
+    - run: echo ${{ steps.go-cache-paths.outputs.go-build }}
+    - run: echo ${{ steps.go-cache-paths.outputs.go-mod }}
+
+    - name: Go Build Cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.go-cache-paths.outputs.go-build }}
+        key: ${{ runner.os }}-go-${{ matrix.go }}-build-${{ hashFiles('**/go.sum') }}
+
+    - name: Go Mod Cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.go-cache-paths.outputs.go-build }}
+        key: ${{ runner.os }}-go-${{ matrix.go }}-build-${{ hashFiles('**/go.sum') }}
+
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - run: go mod download && go mod tidy && go mod verify
+    - run: git --no-pager diff --exit-code
+
+    - run: go vet ./...
+    - run: git --no-pager diff --exit-code
+
+    - if: runner.os == 'Linux'
+      name: Generate breaking-changes examples
+      run: |
+        sh scripts/doc_breaking_changes.sh > docs/BREAKING-CHANGES-EXAMPLES.md
+
+    - run: go fmt ./...
+    - run: git --no-pager diff --exit-code
+
+    - run: go test ./... -coverprofile=coverage.txt -covermode=atomic
+      env:
+        CGO_ENABLED: '1'
+
+    - run: git --no-pager diff --exit-code
+
+    - if: runner.os == 'Linux'
+      name: Errors must not be capitalized https://github.com/golang/go/wiki/CodeReviewComments#error-strings
+      run: |
+        ! git grep -E '(fmt\.Errorf|errors\.New)\(.[A-Z]'
+        
+    # - if: runner.os == 'Linux'
+    #   name: Did you mean %q
+    #   run: |
+    #     ! git grep -E "'[%].'"
+
+    - if: runner.os == 'Linux'
+      name: Also add yaml tags
+      run: |
+        ! git grep -InE 'json:"' | grep -v _test.go | grep -v yaml:
+
+    - uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.txt
+        flags: unittests # optional
+        name: codecov-umbrella # optional
+        fail_ci_if_error: false # optional (default = false)
+        verbose: true # optional (default = false)
+        token: ${{ secrets.CODECOV_TOKEN }} # required

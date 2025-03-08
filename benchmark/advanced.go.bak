@@ -1,0 +1,159 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"runtime"
+	"time"
+
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/tufin/oasdiff/diff"
+	"github.com/tufin/oasdiff/load"
+)
+
+// Пути к файлам спецификаций OpenAPI
+const (
+	BaseSpecPath2     = "E:\\Workspace\\openapidiff\\ghes-3.8.json"
+	RevisionSpecPath2 = "E:\\Workspace\\openapidiff\\ghes-3.9.json"
+)
+
+// BenchmarkResult содержит результаты бенчмарка
+type BenchmarkResult struct {
+	LoadTime      time.Duration
+	DiffTime      time.Duration
+	MemoryUsage   uint64
+	ChangesCount  int
+	EndpointsBase int
+	EndpointsRev  int
+}
+
+func runAdvancedBenchmark() {
+	fmt.Println("Starting advanced OAS diff benchmark...")
+	fmt.Printf("Comparing:\n  Base: %s\n  Revision: %s\n\n", BaseSpecPath2, RevisionSpecPath2)
+
+	var memStats runtime.MemStats
+
+	// Запускаем сборку мусора перед началом измерений
+	runtime.GC()
+	runtime.ReadMemStats(&memStats)
+	initialMemory := memStats.Alloc
+
+	// Загружаем спецификации и замеряем время
+	loadStart := time.Now()
+	
+	// Создаем загрузчик для OpenAPI спецификаций
+	loader := openapi3.NewLoader()
+	
+	// Загрузка базовой спецификации
+	baseSpec, err := load.NewSpecInfo(loader, load.NewSource(BaseSpecPath2))
+	if err != nil {
+		log.Fatalf("Error loading base spec: %v", err)
+	}
+	
+	// Загрузка новой спецификации
+	revisionSpec, err := load.NewSpecInfo(loader, load.NewSource(RevisionSpecPath2))
+	if err != nil {
+		log.Fatalf("Error loading revision spec: %v", err)
+	}
+	
+	loadDuration := time.Since(loadStart)
+
+	// Подсчитываем количество endpoints в каждой спецификации
+	baseEndpoints := countEndpoints(baseSpec.Spec)
+	revEndpoints := countEndpoints(revisionSpec.Spec)
+
+	// Запускаем diff и замеряем время
+	diffStart := time.Now()
+	
+	// Сравниваем спецификации
+	result, err := diff.Get(diff.NewConfig(), baseSpec.Spec, revisionSpec.Spec)
+	if err != nil {
+		log.Fatalf("Error comparing specs: %v", err)
+	}
+	diffDuration := time.Since(diffStart)
+
+	// Измеряем использование памяти после выполнения
+	runtime.ReadMemStats(&memStats)
+	memoryUsed := memStats.Alloc - initialMemory
+
+	// Подсчитываем количество изменений
+	changesCount := 0
+	if result != nil && result.PathsDiff != nil {
+		changesCount = countDetailedChanges(result.PathsDiff)
+	}
+
+	// Формируем результат
+	benchResult := BenchmarkResult{
+		LoadTime:      loadDuration,
+		DiffTime:      diffDuration,
+		MemoryUsage:   memoryUsed,
+		ChangesCount:  changesCount,
+		EndpointsBase: baseEndpoints,
+		EndpointsRev:  revEndpoints,
+	}
+
+	// Выводим результаты
+	printAdvancedResults(benchResult)
+}
+
+// Подсчет количества эндпоинтов в спецификации
+func countEndpoints(spec *openapi3.T) int {
+	count := 0
+	// Перебираем все пути в спецификации
+	for _, pathItem := range spec.Paths.Map() {
+		// Подсчитываем все HTTP методы для каждого пути
+		if pathItem.Get != nil {
+			count++
+		}
+		if pathItem.Post != nil {
+			count++
+		}
+		if pathItem.Put != nil {
+			count++
+		}
+		if pathItem.Delete != nil {
+			count++
+		}
+		if pathItem.Options != nil {
+			count++
+		}
+		if pathItem.Head != nil {
+			count++
+		}
+		if pathItem.Patch != nil {
+			count++
+		}
+	}
+	return count
+}
+
+// Подсчет количества изменений в результате сравнения
+func countDetailedChanges(result *diff.PathsDiff) int {
+	addedCount := len(result.Added)
+	deletedCount := len(result.Deleted)
+
+	modifiedCount := 0
+	for _, pathDiff := range result.Modified {
+		// Для каждого измененного пути считаем изменения в операциях
+		if pathDiff.OperationsDiff != nil {
+			modifiedCount += len(pathDiff.OperationsDiff.Added)
+			modifiedCount += len(pathDiff.OperationsDiff.Deleted)
+			modifiedCount += len(pathDiff.OperationsDiff.Modified)
+		}
+	}
+
+	return addedCount + deletedCount + modifiedCount
+}
+
+// Вывод результатов расширенного бенчмарка
+func printAdvancedResults(result BenchmarkResult) {
+	fmt.Println("\n=== Advanced Benchmark Results ===")
+	fmt.Printf("Base endpoints count:    %d\n", result.EndpointsBase)
+	fmt.Printf("Revision endpoints count: %d\n", result.EndpointsRev)
+	fmt.Printf("Total changes detected:   %d\n", result.ChangesCount)
+	fmt.Printf("Load time:                %v\n", result.LoadTime)
+	fmt.Printf("Diff computation time:    %v\n", result.DiffTime)
+	fmt.Printf("Total processing time:    %v\n", result.LoadTime+result.DiffTime)
+	fmt.Printf("Memory usage:             %.2f MB\n", float64(result.MemoryUsage)/(1024*1024))
+	fmt.Printf("===================================\n")
+}

@@ -1,0 +1,86 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/tufin/oasdiff/diff"
+	"github.com/tufin/oasdiff/load"
+)
+
+// Пути к файлам спецификаций OpenAPI
+const (
+	BaseSpecPath1     = "E:\\Workspace\\openapidiff\\ghes-3.8.json"
+	RevisionSpecPath1 = "E:\\Workspace\\openapidiff\\ghes-3.9.json"
+)
+
+func main() {
+	fmt.Println("Starting OpenAPI Diff Benchmark")
+	fmt.Printf("Base: %s\nRevision: %s\n\n", BaseSpecPath1, RevisionSpecPath1)
+
+	// Загрузка спецификаций
+	fmt.Println("Loading specifications...")
+	
+	// Создаем загрузчик для OpenAPI спецификаций
+	loader := openapi3.NewLoader()
+	
+	// Загружаем базовую спецификацию
+	baseSpec, err := load.NewSpecInfo(loader, load.NewSource(BaseSpecPath1))
+	if err != nil {
+		log.Fatalf("Failed to load base spec: %v", err)
+	}
+
+	// Загружаем спецификацию с изменениями
+	revisionSpec, err := load.NewSpecInfo(loader, load.NewSource(RevisionSpecPath1))
+	if err != nil {
+		log.Fatalf("Failed to load revision spec: %v", err)
+	}
+	fmt.Println("Specifications loaded successfully")
+
+	// Выполнение сравнения (diff)
+	fmt.Println("\nComparing specifications...")
+	startTime := time.Now()
+	
+	// Используем стандартный метод Get из пакета diff
+	diffResult, err := diff.Get(diff.NewConfig(), baseSpec.Spec, revisionSpec.Spec)
+	if err != nil {
+		log.Fatalf("Failed to compare specs: %v", err)
+	}
+	
+	duration := time.Since(startTime)
+
+	// Вывод результатов
+	fmt.Printf("\nComparison completed in %v\n", duration)
+	
+	// Подсчет изменений
+	changeCount := countChangesInDiff(diffResult)
+	fmt.Printf("Found %d changes between specifications\n", changeCount)
+}
+
+// countChangesInDiff подсчитывает общее количество изменений
+func countChangesInDiff(diffResult *diff.Diff) int {
+	if diffResult == nil || diffResult.PathsDiff == nil {
+		return 0
+	}
+	
+	count := 0
+	
+	// Добавленные пути
+	count += len(diffResult.PathsDiff.Added)
+	
+	// Удаленные пути
+	count += len(diffResult.PathsDiff.Deleted)
+	
+	// Измененные пути и методы
+	for _, pathDiff := range diffResult.PathsDiff.Modified {
+		if pathDiff.OperationsDiff != nil {
+			count += len(pathDiff.OperationsDiff.Added)
+			count += len(pathDiff.OperationsDiff.Deleted)
+			count += len(pathDiff.OperationsDiff.Modified)
+		}
+	}
+	
+	return count
+}
