@@ -1,0 +1,95 @@
+.\oasdiff-main\benchmark> go run .\benchmark.go --base "E:\Workspace\openapidiff\ghes-3.8.json" --revision "E:\Workspace\openapidiff\ghes-3.9.json" --output ".\result.txt" --compare "C:\Users\-\Downloads\bech_1.txt"
+ # JMH-compatible Go Benchmark Framework
+ # Go version: go1.24.1
+ # GOOS: windows, GOARCH: amd64
+ # CPU: 12, amd64
+ # Base Spec: E:\Workspace\openapidiff\ghes-3.8.json
+ # Revision Spec: E:\Workspace\openapidiff\ghes-3.9.json
+ # Warmup: 5 iterations, 10s each
+ # Measurement: 5 iterations, 10s each
+ # Timeout: 10 min per iteration
+ # Threads: 1 thread
+ # Benchmark mode: Throughput, ops/time
+ # Benchmark: org.oasdiff.Benchmark
+
+ # Run progress: 0.00% complete, ETA 00:08:20
+ # Fork: 1 of 5
+ # Warmup Iteration   1: 2.916 ops/s
+ # Warmup Iteration   2: 2.816 ops/s
+ # Warmup Iteration   3: 2.855 ops/s
+ # Warmup Iteration   4: 2.909 ops/s
+ # Warmup Iteration   5: 2.900 ops/s
+ Iteration   1: 2.957 ops/s
+ Iteration   2: 2.890 ops/s
+ Iteration   3: 2.946 ops/s
+ Iteration   4: 2.876 ops/s
+ Iteration   5: 2.949 ops/s
+
+ # Run progress: 20.00% complete, ETA 00:06:40
+ # Fork: 2 of 5
+ # Warmup Iteration   1: 2.960 ops/s
+ # Warmup Iteration   2: 2.978 ops/s
+ # Warmup Iteration   3: 2.964 ops/s
+ # Warmup Iteration   4: 2.877 ops/s
+ # Warmup Iteration   5: 2.471 ops/s
+ Iteration   1: 2.774 ops/s
+ Iteration   2: 2.813 ops/s
+ Iteration   3: 2.843 ops/s
+ Iteration   4: 2.859 ops/s
+ Iteration   5: 2.857 ops/s
+
+ # Run progress: 40.00% complete, ETA 00:05:00
+ # Fork: 3 of 5
+ # Warmup Iteration   1: 2.797 ops/s
+ # Warmup Iteration   2: 2.811 ops/s
+ # Warmup Iteration   3: 2.816 ops/s
+ # Warmup Iteration   4: 2.822 ops/s
+ # Warmup Iteration   5: 2.814 ops/s
+ Iteration   1: 2.796 ops/s
+ Iteration   2: 2.799 ops/s
+ Iteration   3: 2.796 ops/s
+ Iteration   4: 2.816 ops/s
+ Iteration   5: 2.812 ops/s
+
+ # Run progress: 60.00% complete, ETA 00:03:20
+ # Fork: 4 of 5
+ # Warmup Iteration   1: 2.802 ops/s
+ # Warmup Iteration   2: 2.807 ops/s
+ # Warmup Iteration   3: 2.796 ops/s
+ # Warmup Iteration   4: 2.796 ops/s
+ # Warmup Iteration   5: 2.833 ops/s
+ Iteration   1: 2.864 ops/s
+ Iteration   2: 2.868 ops/s
+ Iteration   3: 2.784 ops/s
+ Iteration   4: 2.863 ops/s
+ Iteration   5: 2.844 ops/s
+
+ # Run progress: 80.00% complete, ETA 00:01:40
+ # Fork: 5 of 5
+ # Warmup Iteration   1: 2.790 ops/s
+ # Warmup Iteration   2: 2.791 ops/s
+ # Warmup Iteration   3: 2.840 ops/s
+ # Warmup Iteration   4: 2.896 ops/s
+ # Warmup Iteration   5: 2.852 ops/s
+ Iteration   1: 2.874 ops/s
+ Iteration   2: 2.873 ops/s
+ Iteration   3: 2.883 ops/s
+ Iteration   4: 2.834 ops/s
+ Iteration   5: 2.956 ops/s
+
+
+ Result "org.oasdiff.Benchmark":
+   2.857 ±(99.9%) 0.037 ops/s [Average]
+   (min, avg, max) = (2.774, 2.857, 2.957), stdev = 0.052
+   CI (99.9%): [2.820, 2.894] (assumes normal distribution)
+
+
+ # Run complete. Total time: 00:08:20
+
+ REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+ why the numbers are the way they are. Use profilers, design factorial experiments, make sure
+ the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+ Do not assume the numbers tell you what you want them to tell.
+
+ Benchmark         Mode  Cnt  Score   Error  Units
+ org.oasdiff.Benchmark  thrpt   25  2.857 ± 0.037  ops/s
