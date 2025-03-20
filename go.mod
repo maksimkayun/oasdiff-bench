@@ -5,7 +5,7 @@ go 1.24
 require (
 	cloud.google.com/go v0.119.0
 	github.com/TwiN/go-color v1.4.1
-	github.com/getkin/kin-openapi v0.129.0
+	github.com/getkin/kin-openapi v0.131.0
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
@@ -21,8 +21,8 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/magiconair/properties v1.8.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/oasdiff/yaml v0.0.0-20241214135536-5f7845c759c8 // indirect
-	github.com/oasdiff/yaml3 v0.0.0-20241214160948-977117996672 // indirect
+	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
+	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
