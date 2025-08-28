@@ -8,7 +8,7 @@ require (
 	github.com/getkin/kin-openapi v0.132.0
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.19.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/yargevad/filepathx v1.0.0
 	github.com/yuin/goldmark v1.7.12
 	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa
